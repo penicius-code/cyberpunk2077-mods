@@ -1,0 +1,48 @@
+# Cyberslop Scanner Pins 1.0.0, built on Cyberpunk 2077 2.31
+#
+# Spawn profiles for world (3D) map pins: a pin's widget is created when the player comes
+# within spawnDistance and removed past despawnDistance. Vanilla POIs use
+# MappinUISpawnProfile.ShortRange (50 / 100 m). The redscript part picks one of these by the
+# "Scanner range" setting (100 to 300 m in steps of 50).
+MappinUISpawnProfile.CyberslopScan100:
+  $base: MappinUISpawnProfile.ShortRange
+  spawnDistance: 100.0
+  despawnDistance: 115.0
+
+MappinUISpawnProfile.CyberslopScan150:
+  $base: MappinUISpawnProfile.ShortRange
+  spawnDistance: 150.0
+  despawnDistance: 165.0
+
+MappinUISpawnProfile.CyberslopScan200:
+  $base: MappinUISpawnProfile.ShortRange
+  spawnDistance: 200.0
+  despawnDistance: 215.0
+
+MappinUISpawnProfile.CyberslopScan250:
+  $base: MappinUISpawnProfile.ShortRange
+  spawnDistance: 250.0
+  despawnDistance: 265.0
+
+MappinUISpawnProfile.CyberslopScan300:
+  $base: MappinUISpawnProfile.ShortRange
+  spawnDistance: 300.0
+  despawnDistance: 315.0
+
+# Copies of the vanilla world runtime profiles (look and behaviour unchanged). The redscript part
+# gives these to the pins it extends, so it can tell them apart from every other pin (tracked
+# waypoints, quest pins, other mods' pins) that uses the vanilla records.
+WorldMappinUIProfile.CyberslopScanServicePoint:
+  $base: WorldMappinUIProfile.ServicePoint
+
+WorldMappinUIProfile.CyberslopScanFixer:
+  $base: WorldMappinUIProfile.Fixer
+
+WorldMappinUIProfile.CyberslopScanFastTravel:
+  $base: WorldMappinUIProfile.FastTravel
+
+WorldMappinUIProfile.CyberslopScanDropPoint:
+  $base: WorldMappinUIProfile.DropPoint
+
+WorldMappinUIProfile.CyberslopScanDefault:
+  $base: WorldMappinUIProfile.Default

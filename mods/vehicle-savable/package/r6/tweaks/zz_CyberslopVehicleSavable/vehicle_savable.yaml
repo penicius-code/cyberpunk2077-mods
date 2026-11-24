@@ -1,0 +1,71 @@
+# Cyberslop Vehicle Savable 1.0.0 (penicius-code, 2026-11-08)
+# Every vanilla player vehicle (Vehicle.*_player, 2.31 player_vehicles.tweak) has savable = true.
+# These ownable custom vehicles copy a vanilla TRAFFIC record with $base, which has no savable flag,
+# so the car is never written into a save. Loading a save made while driving one put V on the roof
+# (Caliburn Legacy, 2026-11-08). This sets the flag the vanilla player versions have.
+# Only records in Vehicle.vehicle_list (player-ownable) are listed. Remove this folder to revert.
+
+# Standalone - Rayfield Caliburn Legacy (24222), $base Vehicle.v_sport1_rayfield_caliburn
+Vehicle.rayfield_caliburn_legacy.savable: true
+
+# Apollo Scout Tactical (boneill / hausvonsin), $base Vehicle.v_sportbike3_brennan_apollo
+Vehicle.militech_apollo_tactical.savable: true
+
+# Honda NSX Liberty Walk (sdh0), $base Vehicle.v_sport2_porsche_911turbo
+Vehicle.nsx_lb_base.savable: true
+
+# SDH0 Color Pack car, $base Vehicle.v_sport2_porsche_911turbo
+Vehicle.color_pack_base.savable: true
+
+# Arch V4 bikes (all via v_sportbike2_arch)
+Vehicle.v_fzr3000.savable: true
+Vehicle.v_arch_v4fyrn_blue.savable: true
+Vehicle.v_arch_v4fyrn_carbon.savable: true
+Vehicle.v_arch_v4fyrn_gold.savable: true
+Vehicle.v_arch_v4fyrn_gray.savable: true
+Vehicle.v_arch_v4fyrn_green.savable: true
+Vehicle.v_arch_v4fyrn_mox.savable: true
+Vehicle.v_arch_v4fyrn_pink.savable: true
+Vehicle.v_arch_v4fyrn_red.savable: true
+Vehicle.v_arch_v4fyrn_white.savable: true
+Vehicle.v_arch_v4fyrn_yellow.savable: true
+Vehicle.v_arch_v4mogus_blue.savable: true
+Vehicle.v_arch_v4mogus_carbon.savable: true
+Vehicle.v_arch_v4mogus_gray.savable: true
+Vehicle.v_arch_v4mogus_green.savable: true
+Vehicle.v_arch_v4mogus_mox.savable: true
+Vehicle.v_arch_v4mogus_pink.savable: true
+Vehicle.v_arch_v4mogus_red.savable: true
+Vehicle.v_arch_v4mogus_white.savable: true
+Vehicle.v_arch_v4mogus_yellow.savable: true
+Vehicle.v_arch_v4paladin_blue.savable: true
+Vehicle.v_arch_v4paladin_carbon.savable: true
+Vehicle.v_arch_v4paladin_gold.savable: true
+Vehicle.v_arch_v4paladin_graphite.savable: true
+Vehicle.v_arch_v4paladin_gray.savable: true
+Vehicle.v_arch_v4paladin_green.savable: true
+Vehicle.v_arch_v4paladin_legacy.savable: true
+Vehicle.v_arch_v4paladin_mox.savable: true
+Vehicle.v_arch_v4paladin_pink.savable: true
+Vehicle.v_arch_v4paladin_red.savable: true
+Vehicle.v_arch_v4paladin_white.savable: true
+Vehicle.v_arch_v4paladin_yellow.savable: true
+Vehicle.v_arch_v4valor_blue.savable: true
+Vehicle.v_arch_v4valor_carbon.savable: true
+Vehicle.v_arch_v4valor_gray.savable: true
+Vehicle.v_arch_v4valor_green.savable: true
+Vehicle.v_arch_v4valor_mox.savable: true
+Vehicle.v_arch_v4valor_pink.savable: true
+Vehicle.v_arch_v4valor_red.savable: true
+Vehicle.v_arch_v4valor_skin_0.savable: true
+Vehicle.v_arch_v4valor_white.savable: true
+Vehicle.v_arch_v4valor_yellow.savable: true
+Vehicle.v_arch_v4vigil_blue.savable: true
+Vehicle.v_arch_v4vigil_carbon.savable: true
+Vehicle.v_arch_v4vigil_gray.savable: true
+Vehicle.v_arch_v4vigil_green.savable: true
+Vehicle.v_arch_v4vigil_mox.savable: true
+Vehicle.v_arch_v4vigil_pink.savable: true
+Vehicle.v_arch_v4vigil_red.savable: true
+Vehicle.v_arch_v4vigil_white.savable: true
+Vehicle.v_arch_v4vigil_yellow.savable: true

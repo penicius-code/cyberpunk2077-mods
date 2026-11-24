@@ -1,0 +1,66 @@
+# HeadPopAnyone.yaml
+# Defines a proper StatusEffect that triggers head dismemberment.
+# Install: Drop into r6/tweaks/HeadPopAnyone/
+
+HeadPopAnyone.HeadPop_Effector:
+  $type: gamedataForceDismembermentEffector_Record
+  prereqRecord: Prereqs.AlwaysTruePrereq
+  bodyPart: HEAD
+  woundType: COARSE
+  dismembermentChance: 9999
+  isCritical: True
+  shouldKillNPC: True
+  skipDeathAnim: False
+  effectorClassName: ForceDismembermentEffector
+  removeAfterActionCall: True
+  removeAfterPrereqCheck: False
+  statModifierGroups: []
+
+HeadPopAnyone.HeadPop_Package:
+  $type: gamedataGameplayLogicPackage_Record
+  stackable: False
+  animationWrapperOverrides: []
+  effectors:
+    - HeadPopAnyone.HeadPop_Effector
+  items: []
+  statPools: []
+  stats: []
+
+HeadPopAnyone.HeadPop_Duration_Mod:
+  $type: gamedataConstantStatModifier_Record
+  modifierType: Additive
+  statType: BaseStats.MaxDuration
+  value: 5.0
+
+HeadPopAnyone.HeadPop_Duration:
+  $type: gamedataStatModifierGroup_Record
+  drawBasedOnStatType: False
+  optimiseCombinedModifiers: False
+  saveBasedOnStatType: False
+  statModsLimit: -1
+  relatedModifierGroups: []
+  statModifiers:
+    - HeadPopAnyone.HeadPop_Duration_Mod
+
+BaseStatusEffect.HeadPopAnyone_Pop:
+  $type: gamedataStatusEffect_Record
+  duration: HeadPopAnyone.HeadPop_Duration
+  dynamicDuration: False
+  isAffectedByTimeDilationNPC: False
+  isAffectedByTimeDilationPlayer: False
+  maxStacks: RTDB.StatusEffect_inline0
+  reapplyPackagesOnMaxStacks: False
+  removeAllStacksWhenDurationEnds: True
+  removeOnStoryTier: False
+  replicated: False
+  savable: False
+  statusEffectType: BaseStatusEffectTypes.Misc
+  stopActiveSfxOnDeactivate: False
+  debugTags: []
+  gameplayTags: []
+  immunityStats: []
+  packages:
+    - HeadPopAnyone.HeadPop_Package
+  SFX: []
+  VFX: []
+  canReapply: True

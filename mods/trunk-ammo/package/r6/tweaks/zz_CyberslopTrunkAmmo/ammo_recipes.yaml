@@ -1,0 +1,61 @@
+# Cyberslop Trunk Ammo 1.0.0 - ammo recipes tiered by caliber
+# The crafting bench and the car trunk both press ammo with these recipes.
+#
+#   caliber  ingredient     rounds   per round at Common 25 / Uncommon 50 / Rare 120
+#   pistol   2 Common    ->   40     1.25
+#   rifle    2 Common    ->   20     2.50
+#   shells   1 Uncommon  ->   12     4.17
+#   sniper   1 Rare      ->   10    12.00   (one Rare part = one full sniper load of 10)
+#
+# Pistol and rifle repeat EconomyPunk's values (2 Common -> 40 / 20) so the whole table
+# lives here. Loads after EconomyPunk (zz_), so these win.
+
+CyberslopTrunkAmmo.PistolPart:
+  $type: gamedataRecipeElement_Record
+  ingredient: Items.CommonMaterial1
+  amount: 2
+
+CyberslopTrunkAmmo.PistolCrafting:
+  $type: gamedataCraftingPackage_Record
+  craftingRecipe:
+    - CyberslopTrunkAmmo.PistolPart
+
+CyberslopTrunkAmmo.RiflePart:
+  $type: gamedataRecipeElement_Record
+  ingredient: Items.CommonMaterial1
+  amount: 2
+
+CyberslopTrunkAmmo.RifleCrafting:
+  $type: gamedataCraftingPackage_Record
+  craftingRecipe:
+    - CyberslopTrunkAmmo.RiflePart
+
+CyberslopTrunkAmmo.ShotgunPart:
+  $type: gamedataRecipeElement_Record
+  ingredient: Items.UncommonMaterial1
+  amount: 1
+
+CyberslopTrunkAmmo.ShotgunCrafting:
+  $type: gamedataCraftingPackage_Record
+  craftingRecipe:
+    - CyberslopTrunkAmmo.ShotgunPart
+
+CyberslopTrunkAmmo.SniperPart:
+  $type: gamedataRecipeElement_Record
+  ingredient: Items.RareMaterial1
+  amount: 1
+
+CyberslopTrunkAmmo.SniperCrafting:
+  $type: gamedataCraftingPackage_Record
+  craftingRecipe:
+    - CyberslopTrunkAmmo.SniperPart
+
+Ammo.HandgunAmmo.CraftingData: CyberslopTrunkAmmo.PistolCrafting
+Ammo.RifleAmmo.CraftingData: CyberslopTrunkAmmo.RifleCrafting
+Ammo.ShotgunAmmo.CraftingData: CyberslopTrunkAmmo.ShotgunCrafting
+Ammo.SniperRifleAmmo.CraftingData: CyberslopTrunkAmmo.SniperCrafting
+
+Ammo.RecipeHandgunAmmo_inline0.amount: 40
+Ammo.RecipeRifleAmmo_inline0.amount: 20
+Ammo.RecipeShotgunAmmo_inline0.amount: 12
+Ammo.RecipeSniperRifleAmmo_inline0.amount: 10

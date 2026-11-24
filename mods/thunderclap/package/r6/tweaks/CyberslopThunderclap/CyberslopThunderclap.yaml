@@ -1,0 +1,214 @@
+# Cyberslop Thunderclap 1.0.0 (2026-11-06): non-lethal electric burst quickhack, written from scratch (no Zeusico data).
+# Records: program item, quickhack, its UI, cost, the trigger status effect, the arc visual attack, tooltip package.
+# All behaviour is in r6\scripts\CyberslopThunderclap (the trigger status effect only carries a tag).
+# Text: Codeware localization keys CyberslopThunderclap-* (r6\scripts\CyberslopThunderclap\Localization.reds).
+
+# ---- program item: vanilla legendary Short Circuit program as the shell (icon, quality, price, deck slot) ----
+Items.CyberslopThunderclapProgram:
+  $base: Items.EMPOverloadLvl4PlusPlusProgram
+  displayName: LocKey#CyberslopThunderclap-Name
+  localizedDescription: LocKey#CyberslopThunderclap-Desc
+  shardType: CyberslopThunderclap
+  CraftingData: ''
+  OnAttach:
+    - EquipmentGLP.CyberslopThunderclapProgram
+  objectActions:
+    - ItemAction.ProgramDisassemble
+    - QuickHack.CyberslopThunderclapHack
+
+EquipmentGLP.CyberslopThunderclapProgram:
+  $type: gamedataGameplayLogicPackage_Record
+  stackable: False
+  UIData:
+    $type: gamedataGameplayLogicPackageUIData_Record
+    iconPath: ability_utility
+    localizedName: LocKey#CyberslopThunderclap-Name
+    localizedDescription: LocKey#CyberslopThunderclap-Tooltip
+  animationWrapperOverrides: []
+  effectors: []
+  items: []
+  statPools: []
+  stats: []
+
+# ---- the quickhack: vanilla DamageHack base = only the generic quickhack effects (armor shred, ping refresh,
+# WasQuickHacked, QuickHackUploaded, reveal progress); no damage status from any vanilla quickhack ----
+QuickHack.CyberslopThunderclapHack:
+  $base: QuickHack.DamageHack
+  actionName: CyberslopThunderclap
+  hackCategory: HackCategory.ControlHack
+  objectActionUI: Interactions.CyberslopThunderclapHack
+  priority: 5
+  costs:
+    - QuickHack.CyberslopThunderclapCost
+  activationTime:
+    - !append
+      $type: gamedataConstantStatModifier_Record
+      statType: BaseStats.QuickHackUpload
+      modifierType: Additive
+      value: 2.0
+  completionEffects:
+    - !append
+      $type: gamedataObjectActionEffect_Record
+      recipient: ObjectActionReference.Target
+      statusEffect: BaseStatusEffect.CyberslopThunderclap
+
+QuickHack.CyberslopThunderclapCost:
+  $base: QuickHack.MemoryCostDamage
+  costMods:
+    - !append
+      $type: gamedataConstantStatModifier_Record
+      statType: BaseStats.Memory
+      modifierType: Additive
+      value: 16
+
+Interactions.CyberslopThunderclapHack:
+  $base: Interactions.EMPOverloadHack
+  name: CyberslopThunderclapHack
+  caption: LocKey#CyberslopThunderclap-Name
+  description: LocKey#CyberslopThunderclap-Desc
+
+# ---- trigger: a 1 s marker effect, no packages, hidden; the script reacts to its tag ----
+BaseStatusEffect.CyberslopThunderclap:
+  $type: gamedataStatusEffect_Record
+  statusEffectType: BaseStatusEffectTypes.Misc
+  duration:
+    $type: gamedataStatModifierGroup_Record
+    statModsLimit: -1
+    statModifiers:
+      - $type: gamedataConstantStatModifier_Record
+        statType: BaseStats.MaxDuration
+        modifierType: Additive
+        value: 1.0
+  maxStacks:
+    $type: gamedataStatModifierGroup_Record
+    statModsLimit: -1
+    statModifiers:
+      - $type: gamedataConstantStatModifier_Record
+        statType: BaseStats.MaxStacks
+        modifierType: Additive
+        value: 1
+  dynamicDuration: False
+  isAffectedByTimeDilationNPC: True
+  isAffectedByTimeDilationPlayer: True
+  reapplyPackagesOnMaxStacks: False
+  removeAllStacksWhenDurationEnds: True
+  removeOnStoryTier: False
+  replicated: False
+  savable: False
+  stopActiveSfxOnDeactivate: True
+  gameplayTags:
+    - CyberslopThunderclap
+  debugTags: []
+  packages: []
+  SFX: []
+  VFX: []
+
+# ---- arc visual: vanilla chain lightning beam with every damage modifier removed; the script only runs the
+# effect (no StartAttack), like vanilla TriggerAttackOnNearbyEnemiesEffector, which sends its damage separately ----
+Attacks.CyberslopThunderclapArc:
+  $base: Attacks.ChainLightning
+  statModifiers: []
+  statusEffects: []
+  hitFlags:
+    - ChainLightning
+    - Nonlethal
+    - DealNoDamage
+
+# ---- 1.2.0 settings holder (no game use): value = slow motion on cast, 1 on / 0 off. The CET window
+# mods\CyberslopThunderclap writes CyberslopThunderclap.Settings.value at every launch and on every toggle ----
+CyberslopThunderclap.Settings:
+  $type: gamedataConstantStatModifier_Record
+  statType: BaseStats.Memory
+  modifierType: Additive
+  value: 1.0
+
+# ---- NPCs that offer the quickhack: the quickhack menu matches the deck's quickhacks to the target record's objectActions by
+# actionName. Interactable_NPC_Base and Mechanical_NPC_Base carry the vanilla lists (factions inherit them); the rest
+# are vanilla records that redefine their own list (found by scanning the 2.31 TweakDB sources for SuicideHackBase). ----
+Character.Interactable_NPC_Base:
+  objectActions:
+    - !append-once QuickHack.CyberslopThunderclapHack
+Character.Mechanical_NPC_Base:
+  objectActions:
+    - !append-once QuickHack.CyberslopThunderclapHack
+Character.arasaka_base_mm:
+  objectActions:
+    - !append-once QuickHack.CyberslopThunderclapHack
+Character.arasaka_sumo_hmelee2_fists_mb_rare:
+  objectActions:
+    - !append-once QuickHack.CyberslopThunderclapHack
+Character.arasaka_sumo_hmelee2_hammer_mb_rare:
+  objectActions:
+    - !append-once QuickHack.CyberslopThunderclapHack
+Character.mq005_police_officer_01:
+  objectActions:
+    - !append-once QuickHack.CyberslopThunderclapHack
+Character.mq005_police_officer_02:
+  objectActions:
+    - !append-once QuickHack.CyberslopThunderclapHack
+Character.mq005_police_officer_03:
+  objectActions:
+    - !append-once QuickHack.CyberslopThunderclapHack
+Character.mq008_6th_street_civ_judge_ma:
+  objectActions:
+    - !append-once QuickHack.CyberslopThunderclapHack
+Character.mq008_6th_street_civ_judge_wa:
+  objectActions:
+    - !append-once QuickHack.CyberslopThunderclapHack
+Character.mq008_6th_street_comp1:
+  objectActions:
+    - !append-once QuickHack.CyberslopThunderclapHack
+Character.mq008_6th_street_comp2:
+  objectActions:
+    - !append-once QuickHack.CyberslopThunderclapHack
+Character.mq008_6th_street_comp3:
+  objectActions:
+    - !append-once QuickHack.CyberslopThunderclapHack
+Character.mq008_6th_street_comp4:
+  objectActions:
+    - !append-once QuickHack.CyberslopThunderclapHack
+Character.mq008_6th_street_female:
+  objectActions:
+    - !append-once QuickHack.CyberslopThunderclapHack
+Character.mq008_6th_street_male:
+  objectActions:
+    - !append-once QuickHack.CyberslopThunderclapHack
+Character.mq008_6th_street_representative:
+  objectActions:
+    - !append-once QuickHack.CyberslopThunderclapHack
+Character.sq023_vasquez:
+  objectActions:
+    - !append-once QuickHack.CyberslopThunderclapHack
+Character.sts_ep1_01_nika:
+  objectActions:
+    - !append-once QuickHack.CyberslopThunderclapHack
+Character.sts_ep1_01_target:
+  objectActions:
+    - !append-once QuickHack.CyberslopThunderclapHack
+Character.sts_ep1_06_cop:
+  objectActions:
+    - !append-once QuickHack.CyberslopThunderclapHack
+Character.sts_ep1_12_alan_noel:
+  objectActions:
+    - !append-once QuickHack.CyberslopThunderclapHack
+Character.sts_ep1_13_fiona:
+  objectActions:
+    - !append-once QuickHack.CyberslopThunderclapHack
+Character.sts_std_arr_06_kangtao_ranger1_ranged2_dian_ma:
+  objectActions:
+    - !append-once QuickHack.CyberslopThunderclapHack
+Character.sts_std_arr_06_karl_greenski:
+  objectActions:
+    - !append-once QuickHack.CyberslopThunderclapHack
+Character.sts_std_arr_06_sec_chief:
+  objectActions:
+    - !append-once QuickHack.CyberslopThunderclapHack
+Character.sts_wat_kab_01_enemy_medium_range_m_bouncer:
+  objectActions:
+    - !append-once QuickHack.CyberslopThunderclapHack
+Character.we_ep1_05_mini_boss:
+  objectActions:
+    - !append-once QuickHack.CyberslopThunderclapHack
+Character.Cerberus_NPC_Base:
+  objectActions:
+    - !append-once QuickHack.CyberslopThunderclapHack
