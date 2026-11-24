@@ -7,7 +7,7 @@ Power, station, volume and mute for radios and TVs within reach. Single-player o
 | | |
 |---|---|
 | Requires | CET, redscript |
-| Status | not run in game yet; checked with an offline mock test (37 of 37 checks pass) |
+| Status | in use in my game and working; no written test record; checked with an offline mock test (37 of 37 checks pass) |
 
 There is no code in this folder. Install, uninstall, compatibility and known issues are in the [standalone README](https://github.com/penicius-code/cp2077-media-remote#readme).
 

@@ -7,7 +7,7 @@ Choose the tracked quest from a journal-style window without the pause menu. Sin
 | | |
 |---|---|
 | Requires | CET |
-| Status | not run in game yet; the offline mock test passes (129 of 129 checks) |
+| Status | in use in my game and working; no written test record; the offline mock test passes (129 of 129 checks) |
 
 There is no code in this folder. Install, uninstall, compatibility and known issues are in the [standalone README](https://github.com/penicius-code/cp2077-quest-picker#readme).
 
