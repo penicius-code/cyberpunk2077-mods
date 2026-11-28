@@ -7,7 +7,7 @@ Cyberware wears with use, loses performance and needs paid repair at a ripperdoc
 | | |
 |---|---|
 | Requires | CET, redscript, TweakXL, Codeware, Mod Settings, Input Loader |
-| Status | Chrome Upkeep 1.7.2 and Chrome Clinic 1.1.3 in use in my game and working; no written test record |
+| Status | Chrome Upkeep 1.7.2 and Chrome Clinic 1.1.3 in use in my game and working; Chrome Upkeep 1.8.0 to 1.8.2 and Chrome Clinic 1.2.0 to 1.2.2 installed in my game, not yet play-tested; no written test record |
 
 There is no code in this folder. Install, uninstall, compatibility and known issues are in the [standalone README](https://github.com/penicius-code/cp2077-chrome-upkeep#readme).
 
