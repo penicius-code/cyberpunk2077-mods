@@ -25,7 +25,7 @@ Built on game versions 2.31 and 2.5. The Status column gives the recorded test r
 </details>
 
 <details>
-<summary><strong>Vehicles</strong> (8)</summary>
+<summary><strong>Vehicles</strong> (9)</summary>
 
 | Mod | What it does | Requires | Status | Details |
 |---|---|---|---|---|
@@ -37,11 +37,12 @@ Built on game versions 2.31 and 2.5. The Status column gives the recorded test r
 | Calm Exit | Getting out of a car outside combat no longer draws a weapon | redscript | Compiles on 2.5, not yet play-tested | [README](mods/calm-exit/README.md) |
 | EVS Vehicle On Fix | With Enhanced Vehicle System: an engine switched off stays off after exit; third-person radio muffle works | redscript, Enhanced Vehicle System | Compiles, not yet play-tested | [README](mods/evs-vehicle-on-fix/README.md) |
 | Vehicle Savable | Saves made while driving certain add-on cars and bikes load correctly | TweakXL; the vehicle mods it lists | Not yet play-tested | [README](mods/vehicle-savable/README.md) |
+| RA Behemoth Name | Gives the RA Militech Behemoth truck its own name in menus | redscript, TweakXL, Codeware, RA Militech Behemoth | no written test record | [README](mods/ra-behemoth-name/README.md) |
 
 </details>
 
 <details>
-<summary><strong>Combat</strong> (9)</summary>
+<summary><strong>Combat</strong> (10)</summary>
 
 | Mod | What it does | Requires | Status | Details |
 |---|---|---|---|---|
@@ -54,6 +55,7 @@ Built on game versions 2.31 and 2.5. The Status column gives the recorded test r
 | Crowd Collapse | System Collapse knocks crowd NPCs unconscious | redscript; a mod that lets System Collapse target civilians | compiles on 2.5; not run in game | [README](mods/crowd-collapse/README.md) |
 | Enemy Armor | Armour for enemies by what they visibly wear, their faction and rank; chassis armour for drones and mechs | redscript, Mod Settings, Ped Damage Overhaul 2077 | in use in my game and working; no written test record for 1.5.0 (the 1.0.0 core was checked against a hit log on 2.31) | [README](mods/enemy-armor/README.md); own repo [cp2077-enemy-armor](https://github.com/penicius-code/cp2077-enemy-armor) |
 | Aerial Knockout | The aerial takedown knocks out instead of killing; Mantis Blades still kill | redscript, Codeware | compiles on 2.5; no written test record | [README](mods/aerial-knockout/README.md) |
+| Adam Summon | CET toggle that starts the Lore-Accurate Adam Smasher encounter anywhere | CET, Lore-Accurate Adam Smasher | not run in game yet | [README](mods/adam-summon/README.md) |
 
 </details>
 
@@ -91,7 +93,7 @@ Built on game versions 2.31 and 2.5. The Status column gives the recorded test r
 </details>
 
 <details>
-<summary><strong>Interface windows</strong> (9)</summary>
+<summary><strong>Interface windows</strong> (10)</summary>
 
 | Mod | What it does | Requires | Status | Details |
 |---|---|---|---|---|
@@ -104,15 +106,17 @@ Built on game versions 2.31 and 2.5. The Status column gives the recorded test r
 | HUD Control (with Scanner Pins) | Hide HUD elements and set their opacity on top of Limited HUD; map pins get world markers out to scanner range | CET, redscript, TweakXL, Limited HUD | not run in game yet | [README](mods/hud-control/README.md) |
 | Gamma Slider | Change gamma from a window or hotkeys, optional day and night values | CET | 1.0.0 loaded in game on 2.31, no written result; 1.1.0 no test record | [README](mods/gamma-slider/README.md) |
 | Kiroshi NetLink | A computer screen inside the Kiroshi optics that opens on a key and follows you on foot and in cars | CET, redscript, Codeware, DigitalVixen Core; source only, not installable from the repo | 1.1.0 and 1.3.0 used in game on 2.31; 1.7.0 failed its in-game test on 2.5; 1.7.1 in use in my game and working; no written test record | [README](mods/netlink/README.md); own repo [cp2077-netlink](https://github.com/penicius-code/cp2077-netlink) |
+| Bane Log | CET window: CyberBane's texts and map pins as a history, pins trackable with one click | CET, redscript, CyberBane | no written test record | [README](mods/bane-log/README.md) |
 
 </details>
 
 <details>
-<summary><strong>Quality of life</strong> (1)</summary>
+<summary><strong>Quality of life</strong> (2)</summary>
 
 | Mod | What it does | Requires | Status | Details |
 |---|---|---|---|---|
 | Hold Esc Menu | The pause menu opens only after Esc is held for half a second | redscript | not run in game | [README](mods/hold-esc-menu/README.md) |
+| Toast Hold | Notifications (quests, loot, money, texts, other mods' messages) stay on screen longer | redscript; Mod Settings optional | no written test record | [README](mods/toast-hold/README.md) |
 
 </details>
 
