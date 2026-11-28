@@ -71,7 +71,7 @@ Built on game versions 2.31 and 2.5. The Status column gives the recorded test r
 </details>
 
 <details>
-<summary><strong>Realism and economy</strong> (7)</summary>
+<summary><strong>Realism and economy</strong> (12)</summary>
 
 | Mod | What it does | Requires | Status | Details |
 |---|---|---|---|---|
@@ -82,6 +82,11 @@ Built on game versions 2.31 and 2.5. The Status column gives the recorded test r
 | Salvage | Salvage androids and a drone collect loot from downed enemies after a fight | CET, redscript | 1.1.1 runs in game (the mod's own log shows deploying, looting, standby and service); 1.2.0 ran in game on 2.5 (guns picked up, no errors in its log); 1.2.1 to 1.2.4 not run in game yet; no written test pass, see Status | [README](mods/salvage-crew/README.md); own repo [cp2077-salvage-crew](https://github.com/penicius-code/cp2077-salvage-crew) |
 | Trunk Ammo | Opening your car's trunk tops up ammo, paid in crafting components at the bench price | redscript, TweakXL, RedFileSystem | not run in game yet | [README](mods/trunk-ammo/README.md) |
 | Endurance | Adds an Oxygen reserve on top of stamina that runs down with sustained effort | redscript, TweakXL, Dark Future | 1.3.1 in use in my game and working; 1.3.2 compiles on 2.5, not run in game yet; no written test record | [README](mods/endurance/README.md); own repo [cp2077-endurance](https://github.com/penicius-code/cp2077-endurance) |
+| Merc Stims | 29 lore-friendly stims, meds, rations and humanity items for Dark Future, with timed effects and costs | redscript, TweakXL, Codeware, Dark Future | compiles on 2.5; not run in game yet | [README](mods/merc-stims/README.md) |
+| Clinic Meds | Seven clinic cures for Injuries and Dark Future conditions, each with an after-effect | redscript, TweakXL, Codeware, Injuries, Dark Future | compiles on 2.5; not run in game yet | [README](mods/clinic-meds/README.md) |
+| Pharm Courier | CET window: bulk orders of meds by drone to a clinic locker or your apartment | CET, redscript, Merc Stims | no written test record | [README](mods/pharm-courier/README.md) |
+| Parts Courier | CET window: bulk orders of crafting components by drone | CET, redscript | not run in game yet | [README](mods/parts-courier/README.md) |
+| Supplies Courier | CET window: food, drinks and cigarettes by drone in about 30 minutes | CET, redscript; Dark Future optional | not run in game yet | [README](mods/supplies-courier/README.md) |
 
 </details>
 
