@@ -3,7 +3,7 @@
 Script mods for Cyberpunk 2077: combat, vehicles, netrunning, economy, interface windows and small fixes, plus the measuring tools behind some of them. Single-player only.
 Built on game versions 2.31 and 2.5. The Status column gives the recorded test result of each mod; nothing is rounded up. Every mod has its own README with requirements, install, rollback and known issues.
 
-**Featured, each in its own repository:** [AV Flight](https://github.com/penicius-code/cp2077-av-flight) | [Salvage](https://github.com/penicius-code/cp2077-salvage-crew) | [Gorilla Yeet](https://github.com/penicius-code/cp2077-gorilla-yeet) | [Custom Vehicles](https://github.com/penicius-code/cp2077-custom-vehicles) | [Eye Non-Lethal](https://github.com/penicius-code/cp2077-eye-non-lethal) | [Kiroshi NetLink](https://github.com/penicius-code/cp2077-netlink) | [Chrome Stride](https://github.com/penicius-code/cp2077-chrome-stride) | [Chrome Upkeep and Chrome Clinic](https://github.com/penicius-code/cp2077-chrome-upkeep) | [Bounty Ledger and NCPD Uplink](https://github.com/penicius-code/cp2077-bounty-ledger) | [Endurance](https://github.com/penicius-code/cp2077-endurance) | [Quick Wardrobe](https://github.com/penicius-code/cp2077-quick-wardrobe) | [Quest Picker](https://github.com/penicius-code/cp2077-quest-picker) | [Shard Log](https://github.com/penicius-code/cp2077-shard-log) | [Phone Search](https://github.com/penicius-code/cp2077-phone-search) | [Media Remote](https://github.com/penicius-code/cp2077-media-remote) | [Backpack](https://github.com/penicius-code/cp2077-backpack)
+**Featured, each in its own repository:** [AV Flight](https://github.com/penicius-code/cp2077-av-flight) | [Salvage](https://github.com/penicius-code/cp2077-salvage-crew) | [Gorilla Yeet](https://github.com/penicius-code/cp2077-gorilla-yeet) | [Custom Vehicles](https://github.com/penicius-code/cp2077-custom-vehicles) | [Eye Non-Lethal](https://github.com/penicius-code/cp2077-eye-non-lethal) | [Kiroshi NetLink](https://github.com/penicius-code/cp2077-netlink) | [Chrome Stride](https://github.com/penicius-code/cp2077-chrome-stride) | [Chrome Upkeep and Chrome Clinic](https://github.com/penicius-code/cp2077-chrome-upkeep) | [Bounty Ledger and NCPD Uplink](https://github.com/penicius-code/cp2077-bounty-ledger) | [Endurance](https://github.com/penicius-code/cp2077-endurance) | [Quick Wardrobe](https://github.com/penicius-code/cp2077-quick-wardrobe) | [Quest Picker](https://github.com/penicius-code/cp2077-quest-picker) | [Shard Log](https://github.com/penicius-code/cp2077-shard-log) | [Phone Search](https://github.com/penicius-code/cp2077-phone-search) | [Media Remote](https://github.com/penicius-code/cp2077-media-remote) | [Backpack](https://github.com/penicius-code/cp2077-backpack) | [Enemy Armor](https://github.com/penicius-code/cp2077-enemy-armor)
 
 > This is an unofficial fan work and is not approved/endorsed by CD PROJEKT RED. No game files are included.
 
@@ -41,7 +41,7 @@ Built on game versions 2.31 and 2.5. The Status column gives the recorded test r
 </details>
 
 <details>
-<summary><strong>Combat</strong> (7)</summary>
+<summary><strong>Combat</strong> (8)</summary>
 
 | Mod | What it does | Requires | Status | Details |
 |---|---|---|---|---|
@@ -52,6 +52,7 @@ Built on game versions 2.31 and 2.5. The Status column gives the recorded test r
 | Stay Dead | Open-world NPCs you killed or knocked out stay away for game days | redscript, Mod Settings | compiles on 2.31; not run in game | [README](mods/stay-dead/README.md) |
 | Corpse Ragdoll | Dead enemies stop twitching or crawling on the floor | redscript | 1.0.0 run on 2.5 with two failures; 1.0.1 not run in game | [README](mods/corpse-ragdoll/README.md) |
 | Crowd Collapse | System Collapse knocks crowd NPCs unconscious | redscript; a mod that lets System Collapse target civilians | compiles on 2.5; not run in game | [README](mods/crowd-collapse/README.md) |
+| Enemy Armor | Armour for enemies by what they visibly wear, their faction and rank; chassis armour for drones and mechs | redscript, Mod Settings, Ped Damage Overhaul 2077 | in use in my game and working; no written test record for 1.5.0 (the 1.0.0 core was checked against a hit log on 2.31) | [README](mods/enemy-armor/README.md); own repo [cp2077-enemy-armor](https://github.com/penicius-code/cp2077-enemy-armor) |
 
 </details>
 
