@@ -41,7 +41,7 @@ Built on game versions 2.31 and 2.5. The Status column gives the recorded test r
 </details>
 
 <details>
-<summary><strong>Combat</strong> (8)</summary>
+<summary><strong>Combat</strong> (9)</summary>
 
 | Mod | What it does | Requires | Status | Details |
 |---|---|---|---|---|
@@ -53,17 +53,20 @@ Built on game versions 2.31 and 2.5. The Status column gives the recorded test r
 | Corpse Ragdoll | Dead enemies stop twitching or crawling on the floor | redscript | 1.0.0 run on 2.5 with two failures; 1.0.1 not run in game | [README](mods/corpse-ragdoll/README.md) |
 | Crowd Collapse | System Collapse knocks crowd NPCs unconscious | redscript; a mod that lets System Collapse target civilians | compiles on 2.5; not run in game | [README](mods/crowd-collapse/README.md) |
 | Enemy Armor | Armour for enemies by what they visibly wear, their faction and rank; chassis armour for drones and mechs | redscript, Mod Settings, Ped Damage Overhaul 2077 | in use in my game and working; no written test record for 1.5.0 (the 1.0.0 core was checked against a hit log on 2.31) | [README](mods/enemy-armor/README.md); own repo [cp2077-enemy-armor](https://github.com/penicius-code/cp2077-enemy-armor) |
+| Aerial Knockout | The aerial takedown knocks out instead of killing; Mantis Blades still kill | redscript, Codeware | compiles on 2.5; no written test record | [README](mods/aerial-knockout/README.md) |
 
 </details>
 
 <details>
-<summary><strong>Netrunning</strong> (3)</summary>
+<summary><strong>Netrunning</strong> (5)</summary>
 
 | Mod | What it does | Requires | Status | Details |
 |---|---|---|---|---|
 | Easier Breach | Breach Protocol gets easier with Intelligence (longer timer, bigger buffer, shorter chains), devices more than NPCs | redscript; Mod Settings optional | not run in game | [README](mods/easier-breach/README.md) |
 | Downed Quickhacks | Selected quickhacks work on downed NPCs and a few on corpses | redscript, Codeware; Mod Settings optional | in use on 2.5, no written test record | [README](mods/downed-quickhacks/README.md) |
 | Instant Login | Computers skip NewBrowser's typed login and open the desktop at once | redscript, NewBrowser | confirmed in game on 2.31 | [README](mods/instant-login/README.md) |
+| Auto Overclock | A quickhack locked only by missing RAM turns Overclock on, sends the quickhack, and turns Overclock off 3 s later | redscript; Mod Settings optional | 1.0.2 not run in game yet (fixes the fault seen with 1.0.1) | [README](mods/auto-overclock/README.md) |
+| Quickhack Loadout Switcher | CET window and hotkeys to swap Quickhack Loadouts' saved decks without the inventory | CET, redscript, Quickhack Loadouts | 1.0.1 swaps worked in game; 1.0.2 (count fix) not run in game yet | [README](mods/quickhack-loadout-switcher/README.md) |
 
 </details>
 
@@ -109,11 +112,12 @@ Built on game versions 2.31 and 2.5. The Status column gives the recorded test r
 </details>
 
 <details>
-<summary><strong>Audio</strong> (1)</summary>
+<summary><strong>Audio</strong> (2)</summary>
 
 | Mod | What it does | Requires | Status | Details |
 |---|---|---|---|---|
 | Sound Gains | Sets the volume of other sound mods' custom sounds through AudioXL from one tuning table | CET, AudioXL | 1.0.0 confirmed on 2.31; 1.0.1 not run in game | [README](mods/sound-gains/README.md) |
+| Collapse Sound | System Collapse plays the Short Circuit zap; optional electrocution sparks | redscript; Mod Settings optional | compiles on 2.5; not run in game yet | [README](mods/collapse-sound/README.md) |
 
 </details>
 
