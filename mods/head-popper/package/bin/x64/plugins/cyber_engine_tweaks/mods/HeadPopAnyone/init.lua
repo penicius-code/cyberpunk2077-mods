@@ -1,4 +1,4 @@
--- HeadPopAnyone 1.3 by penicius-code
+-- HeadPopAnyone 1.4.1 (1.4.1: Mod Settings > Head Popper > Debug log replaces DEBUG; 1.4: hold the key HOLD_SECONDS to pop; flat RAM cost from Mod Settings)
 -- Trigger the Head Popper dismemberment effect on any NPC you're looking at.
 -- Works on alive, unconscious, defeated, and dead enemies.
 -- Install: Drop HeadPopAnyone folder into bin/x64/plugins/cyber_engine_tweaks/mods/
@@ -10,14 +10,19 @@
 local MAX_RANGE = 15.0      -- Maximum targeting range in meters
 local MAX_ANGLE = 6.0       -- Max degrees between crosshair and target when no NPC is directly under it
 local SKIP_PROTECTED = true -- Leave NPCs the game keeps alive alone (Immortal / Invulnerable, e.g. quest characters)
-local DEBUG = false         -- Print targeting details to the CET console
+local HOLD_SECONDS = 3.0    -- Key must be held this long before the pop fires
 
 local function log(msg)
     print("[HeadPopAnyone] " .. msg)
 end
 
+-- 1.4.1: Mod Settings > Head Popper > Debug > Debug log (redscript getter; CET reads system fields as nil)
 local function dbg(msg)
-    if DEBUG then log(msg) end
+    local ok, on = pcall(function() return HeadPopHelper.LogOn() end)
+    if ok and on then
+        log(msg)
+        spdlog.info("[HeadPopAnyone] " .. msg)
+    end
 end
 
 local function Distance(a, b)
@@ -125,7 +130,7 @@ local function PopHead(target)
     ShowMessage("Head Popped.")
 end
 
-registerHotkey("HeadPopAnyone_Pop", "Pop Head", function()
+local function TryPop()
     local target = GetLookAtTarget()
     if not target then return end
     if SKIP_PROTECTED and IsProtected(target) then
@@ -133,9 +138,55 @@ registerHotkey("HeadPopAnyone_Pop", "Pop Head", function()
         ShowMessage("Protected NPC. Head stays on.")
         return
     end
+    -- 1.4: flat RAM cost (Mod Settings > Head Popper > RAM cost, default 20), paid in HeadPopAnyone.reds
+    local okPay, paid = pcall(function() return HeadPopHelper.PayRam() end)
+    if not okPay then
+        log("Error calling HeadPopHelper.PayRam: " .. tostring(paid))
+        return
+    end
+    if not paid then
+        dbg("Not enough RAM, no pop")
+        local okCost, cost = pcall(function() return HeadPopHelper.RamCost() end)
+        ShowMessage("Not enough RAM (" .. (okCost and tostring(cost) or "?") .. " needed).")
+        return
+    end
     PopHead(target)
+end
+
+-- 1.4: the key must be held for HOLD_SECONDS; letting go earlier cancels.
+-- The target is picked when the hold completes (aim at it at that moment).
+local holding = false
+local held = 0.0
+local fired = false
+
+registerInput("HeadPopAnyone_Pop", "Pop Head (hold " .. HOLD_SECONDS .. " s)", function(isDown)
+    if isDown then
+        if not holding then
+            holding, held, fired = true, 0.0, false
+            dbg("Key down, hold started")
+        end
+    else
+        if holding and not fired then dbg(string.format("Key up after %.2f s, cancelled", held)) end
+        holding, held, fired = false, 0.0, false
+    end
+end)
+
+-- The key-up can be lost when the CET overlay opens mid-hold; drop the hold so it can't fire later on its own.
+registerForEvent("onOverlayOpen", function()
+    if holding and not fired then dbg("Overlay opened, hold dropped") end
+    holding, held, fired = false, 0.0, false
+end)
+
+registerForEvent("onUpdate", function(dt)
+    if not holding or fired then return end
+    held = held + (dt or 0)
+    if held >= HOLD_SECONDS then
+        fired = true -- once per press
+        dbg("Hold complete, trying a pop")
+        TryPop()
+    end
 end)
 
 registerForEvent("onInit", function()
-    log("Loaded 1.3. Bind 'Pop Head' in CET Bindings menu. Max range: " .. MAX_RANGE .. "m")
+    log("Loaded 1.4.1. Hold 'Pop Head' " .. HOLD_SECONDS .. " s (CET Bindings). Max range: " .. MAX_RANGE .. "m")
 end)

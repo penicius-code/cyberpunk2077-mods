@@ -1,7 +1,7 @@
 # Cashflow
 
 Records every change of V's money with its source, shows a morning statement and writes a CSV file you can analyse. Single-player only.
-Version 1.0.3 | Built on game version 2.31 (2026-11-07) | Status: not run in game yet; no in-game result for earlier versions either
+Version 1.1.1 | For game version 2.5 (1.0.3 was built on 2.31) | Status: not run in game yet; no in-game result for earlier versions either; 1.1.0 and 1.1.1 compile on 2.5
 
 ## What and why
 
@@ -72,6 +72,8 @@ Mod Settings > Cyberslop Cashflow:
 
 | Version | Date | Game version | Change |
 |---|---|---|---|
+| 1.1.1 | 2026-11-26 | 2.5 | A money change handled after the player detached (a load or quit in the same frame) is booked instead of dropped; the pre-game attach drops an old listener first; the menu state is set before the menu counts as open. Only visible as correct rows around loads. |
+| 1.1.0 | 2026-11-26 | 2.5 | Thread safety: money changes and source tags are queued as requests and only the book's own handlers touch its lists (the item events run on parallel job threads in 2.x, and a push from there can corrupt a list; a game crash was traced to such a push). Out-of-range tag categories book as "other"; no double booking after a second attach; null guards for the settings. Statements, `cashflow.txt` and the report are unchanged. |
 | 1.0.3 | 2026-11-07 | 2.31 | No fake row per launch from the main menu's pre-game session |
 | 1.0.2 | 2026-11-06 | 2.31 | Review fixes: kill loot booked as jobs, bounty tags only for paid events |
 | 1.0.1 | 2026-11-06 | 2.31 | Buffered file writes, tag fixes |

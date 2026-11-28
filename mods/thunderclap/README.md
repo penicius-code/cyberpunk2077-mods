@@ -1,7 +1,7 @@
 # Thunderclap
 
 A new legendary electric quickhack that knocks human enemies out instead of killing them. Single-player only.
-Version 1.3.0 | For game version 2.5 | Status: 1.1.0 confirmed in game on 2.31 (2026-11-08); 1.2.0 to 1.3.0 not run in game; 1.3.0 compiles on 2.5
+Version 1.3.1 | For game version 2.5 | Status: 1.1.0 confirmed in game on 2.31 (2026-11-08); 1.2.0 to 1.3.1 not run in game; 1.3.1 compiles on 2.5
 
 ## What and why
 
@@ -57,6 +57,7 @@ With the Cyber Engine Tweaks overlay open, the window "Cyberslop Thunderclap" ha
 
 | Version | Date | Game version | Change |
 |---|---|---|---|
+| 1.3.1 | 2026-11-26 | 2.5 | Nearby NPCs notice the burst: V counts as the one who downed the target, so the game alerts witnesses as after a takedown; the burst sends an Explosion stimulus (20 m); hostiles shocked but still conscious fight back. Numbers unchanged. |
 | 1.3.0 | 2026-11-23 | 2.5 | Stronger: 16 RAM, knockout and throw on every cast, three arcs at 12 m that can knock out. |
 | 1.2.2 | 2026-11-23 | 2.5 | Street MaxTac squads count as MaxTac (stunned). NPCs immune to knockout are shocked and stunned. |
 | 1.2.1 | 2026-11-23 | 2.5 | The slow-motion switch goes through a script service; the 1.2.0 method failed on 2.5. |

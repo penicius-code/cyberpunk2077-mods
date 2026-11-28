@@ -1,0 +1,95 @@
+# ForceStun 1.2: shock add-on records, used by r6\scripts\ForceStun\ForceStunShock.reds.
+# Durations here are only the defaults; the script sets the real time from Mod Settings right after applying
+# (StatusEffectSystem.SetStatusEffectRemainingDuration). None of these are saved with the game.
+
+# Look 1: Short Circuit arcs. Look only: no AI reaction (no AIData), no damage, no stats.
+BaseStatusEffect.ForceStunShockArcs:
+  $base: BaseStatusEffect.VehicleTrunkBodyPickup
+  savable: false
+  duration:
+    statModifiers:
+    - $type: ConstantStatModifier
+      statType: BaseStats.MaxDuration
+      modifierType: Additive
+      value: 5.0
+  gameplayTags:
+  - ForceStunShock
+  VFX:
+  - $type: StatusEffectFX
+    name: status_electrocuted
+    shouldReapply: true
+  SFX: []
+
+# Look 2: Cyberware Malfunction quickhack glitch + its sound. Look only, like the arcs.
+BaseStatusEffect.ForceStunShockGlitch:
+  $base: BaseStatusEffect.VehicleTrunkBodyPickup
+  savable: false
+  duration:
+    statModifiers:
+    - $type: ConstantStatModifier
+      statType: BaseStats.MaxDuration
+      modifierType: Additive
+      value: 5.0
+  gameplayTags:
+  - ForceStunShock
+  VFX:
+  - $type: StatusEffectFX
+    name: hacks_cyberware_malfunction
+    shouldReapply: true
+  SFX:
+  - $type: StatusEffectFX
+    name: quickhack_cyberware_malfunction
+    shouldReapply: true
+
+# Experimental: chrome offline. The Cyberware Malfunction quickhack's cyberware-off packages and type (the AI checks
+# the type before using cyberware) without its AI stagger (AIData priority 0: no AI behaviour, can't interrupt the stun; a real record because
+# vanilla GetTopPriorityEffect(type) reads AIData().Priority() without a null check),
+# without its look (the Look setting does that) and without the Quickhack tag (no quickhack perk handling).
+BaseStatusEffect.ForceStunChromeOffline:
+  $base: BaseStatusEffect.CyberwareMalfunction
+  savable: false
+  duration:
+    statModifiers:
+    - $type: ConstantStatModifier
+      statType: BaseStats.MaxDuration
+      modifierType: Additive
+      value: 5.0
+  AIData:
+    $type: StatusEffectAIData
+    priority: 0.0
+  VFX: []
+  SFX: []
+  gameplayTags:
+  - Debuff
+  - CyberwareMalfunction
+  - HackInterrupt
+  - ForceStunShock
+  packages:
+  - GLP.DeactivateCyberware
+  - GLP.DeactivateCyberwareStatusEffects
+  - GLP.DeactivateDangerousCyberware
+
+# Experimental: convulsions. The EMP status (its AI plays the SE_EMP convulsion animation) without damage, stats,
+# look, UI or scream stim, and without vanilla's activation conditions (not in combat, not an Exo). Priority 6 with
+# InterruptsSamePriorityTask: applied during the stun it replaces the stun (and the Savage Sling grab).
+BaseStatusEffect.ForceStunConvulse:
+  $base: BaseStatusEffect.BaseEMP
+  savable: false
+  duration:
+    statModifiers:
+    - $type: ConstantStatModifier
+      statType: BaseStats.MaxDuration
+      modifierType: Additive
+      value: 5.0
+  VFX: []
+  SFX: []
+  uiData: None
+  packages: []
+  gameplayTags:
+  - Debuff
+  - ForceStunShock
+  AIData:
+    $type: StatusEffectAIData
+    priority: 6.0
+    behaviorEventFlag: StatusEffectAIBehaviorFlag.InterruptsSamePriorityTask
+    behaviorType: StatusEffectAIBehaviorType.Unstoppable

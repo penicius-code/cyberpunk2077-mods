@@ -1,4 +1,10 @@
-// Cyberslop Thunderclap 1.3.0 (every cast knocks out, 3 arcs 12 m -25 % that can knock out, 16 RAM;
+// Cyberslop Thunderclap 1.3.1 (2026-11-26: nearby enemies notice the burst. Before, an NPC next to the target
+//   ignored it: the knockout was a bare Unconscious status with no killer set, and no hit was dealt, so vanilla
+//   sent no stimulus at all. Now: V is set as the target's killer before the knockout (vanilla SetMyKiller, as the
+//   System Collapse task does), so vanilla's own OnIncapacitated sends DeadBody + Dying and shows the downed body;
+//   the burst broadcasts an Explosion stim (20 m, reveals V's position, as vanilla's thrown-body impact does); hostiles
+//   shocked but still conscious get a direct Combat stim from V, as a takedown release does.)
+// 1.3.0 (2026-11-23: every cast knocks out, 3 arcs 12 m -25 % that can knock out, 16 RAM;
 // 1.2.2: street MaxTac squads (rarity Elite in TweakDB) count as MaxTac = stunned,
 // and NPCs immune to Unconscious (exo soldiers) are shocked + stunned instead of knocked out; 1.2.1:
 // slow-motion switch through a script service, SlowMoSwitch.reds). 1.0.0 to 1.2.0 were built for game 2.31, 1.2.1 and later for 2.5.
@@ -139,6 +145,8 @@ public abstract class TC {
 
   public static func KnockOut(player: ref<PlayerPuppet>, npc: ref<NPCPuppet>, throw: Bool) -> Void {
     TC.Guard(npc);
+    // 1.3.1: V counts as the one who downed it, so vanilla's OnIncapacitated alerts witnesses (DeadBody, Dying)
+    npc.SetMyKiller(player);
     StatusEffectHelper.ApplyStatusEffect(npc, t"BaseStatusEffect.Unconscious", player.GetEntityID());
     if throw {
       TC.Throw(player, npc);
@@ -162,6 +170,27 @@ public abstract class TC {
     StatusEffectHelper.ApplyStatusEffect(npc, t"BaseStatusEffect.Stun", player.GetEntityID());
   }
 
+  public static func NoiseRadius() -> Float = 20.00
+
+  // 1.3.1: the burst is loud. Vanilla Explosion stim from the target, pointing at V (as NPCPuppet's thrown-body
+  // impact broadcasts it): nearby NPCs react by their own rules (enemies alert / search / fight, civilians flee).
+  public static func Noise(player: ref<PlayerPuppet>, npc: ref<NPCPuppet>) -> Void {
+    let data: stimInvestigateData;
+    data.attackInstigator = player;
+    data.attackInstigatorPosition = player.GetWorldPosition();
+    data.revealsInstigatorPosition = true;
+    StimBroadcasterComponent.BroadcastStim(npc, gamedataStimType.Explosion, TC.NoiseRadius(), data);
+  }
+
+  // 1.3.1: a hostile that got shocked and is still conscious fights V (direct Combat stim from V, as a takedown
+  // release sends it). Neutral or friendly NPCs are left to the Explosion stim's own rules.
+  public static func Provoke(player: ref<PlayerPuppet>, npc: ref<NPCPuppet>) -> Void {
+    if !ScriptedPuppet.IsAlive(npc) || TC.IsDown(npc) || !IsHostileTowardsPlayer(npc) {
+      return;
+    };
+    StimBroadcasterComponent.SendStimDirectly(player, gamedataStimType.Combat, npc);
+  }
+
   // One NPC's share of the burst. main = the quickhacked target (knocked out and thrown), else an arc target.
   public static func Shock(player: ref<PlayerPuppet>, npc: ref<NPCPuppet>, main: Bool) -> String {
     if !ScriptedPuppet.IsAlive(npc) {
@@ -169,14 +198,17 @@ public abstract class TC {
     };
     if TC.IsMachine(npc) {
       StatusEffectHelper.ApplyStatusEffect(npc, t"BaseStatusEffect.LegendaryEmpGrenade", player.GetEntityID());
+      TC.Provoke(player, npc);
       return "machine: EMP";
     };
     if NotEquals(npc.GetNPCType(), gamedataNPCType.Human) {
       TC.Stun(player, npc);
+      TC.Provoke(player, npc);
       return "not human: stunned";
     };
     if TC.IsProtected(npc) {
       TC.Stun(player, npc);
+      TC.Provoke(player, npc);
       return "protected: stunned";
     };
     if TC.IsDown(npc) {
@@ -193,6 +225,7 @@ public abstract class TC {
         // 1.2.2: immune to Unconscious (exo soldiers, some cyberpsychos): the hit lands, then a stun
         TC.Hurt(player, npc, health, TC.MainHealthLoss());
         TC.Stun(player, npc);
+        TC.Provoke(player, npc);
         return s"immune to knockout: shocked + stunned (health \(was) -> \(FloatToStringPrec(health - TC.MainHealthLoss(), 0)) %)";
       };
       // 1.3.0: every cast knocks the target out
@@ -204,6 +237,7 @@ public abstract class TC {
       return s"arc knockout (health \(was) %)";
     };
     let after: Float = TC.Hurt(player, npc, health, TC.ArcHealthLoss());
+    TC.Provoke(player, npc);
     return s"arc shock (health \(was) -> \(FloatToStringPrec(after, 0)) %)";
   }
 
@@ -434,6 +468,7 @@ public abstract class TC {
       return;
     };
     TC.BlastVisual(player, target);
+    TC.Noise(player, target);
     GameObjectEffectHelper.StartEffectEvent(target, n"electric_hit");
     let log: String = TC.Name(target) + ": " + TC.Shock(player, target, true);
     TC.Arcs(player, target, log);

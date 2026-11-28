@@ -1,13 +1,13 @@
 # Head Popper
 
 A hotkey pops the head of the NPC under the crosshair. Single-player only.
-Version 1.3 | Built on game version 2.31 | Status: tested in game on 2.31 (2026-10-24); not tested on 2.5
+Version 1.4.1 | For game version 2.5 (1.3 was built on 2.31) | Status: 1.3 tested in game on 2.31 (2026-10-24); 1.4.1 compiles on 2.5, not run in game yet
 
-Published on Nexus Mods as "Head Popper CET": <https://www.nexusmods.com/cyberpunk2077/mods/28767>
+Published on Nexus Mods as "Head Popper CET" (version 1.3 there): <https://www.nexusmods.com/cyberpunk2077/mods/28767>
 
 ## What and why
 
-Press the hotkey and the NPC under the crosshair loses its head, whether it is alive, knocked out, defeated or already dead. If no NPC is directly under the crosshair, the one closest to it within 6 degrees and 15 m is used. NPCs the game protects (immortal or invulnerable, for example quest characters) are skipped with the message "Protected NPC. Head stays on."
+Hold the key for 3 seconds (since 1.4) and the NPC under the crosshair loses its head, whether it is alive, knocked out, defeated or already dead. If no NPC is directly under the crosshair, the one closest to it within 6 degrees and 15 m is used. NPCs the game protects (immortal or invulnerable, for example quest characters) are skipped with the message "Protected NPC. Head stays on."
 
 How it works: the Cyber Engine Tweaks script picks the target through the game's targeting system and calls a small redscript helper. The helper kills the NPC if needed and applies a status effect defined in the TweakXL file. That status effect carries the game's own head dismemberment effector. All five TweakDB records are new; no base-game record is changed. The idea comes from the Head Popper mod by Mocarniejszy (SoundWAV); the code here is separate.
 
@@ -20,12 +20,13 @@ package/
 
 ## Requirements
 
-| Requirement | Tested with | Link |
+| Requirement | Tested with (1.3, on 2.31) | Link |
 |---|---|---|
 | Cyberpunk 2077 | 2.31 | |
 | Cyber Engine Tweaks | 1.37.1 | [Nexus Mods, mod 107](https://www.nexusmods.com/cyberpunk2077/mods/107) |
 | redscript | 0.5.31 | [Nexus Mods, mod 1511](https://www.nexusmods.com/cyberpunk2077/mods/1511) |
 | TweakXL | 1.11.3 | [Nexus Mods, mod 4197](https://www.nexusmods.com/cyberpunk2077/mods/4197) |
+| Mod Settings (optional, for the RAM cost setting; default 20 without it) | | [Nexus Mods, mod 4885](https://www.nexusmods.com/cyberpunk2077/mods/4885) |
 
 Requirements are not bundled. Install them first.
 
@@ -63,6 +64,8 @@ Constants at the top of `init.lua`:
 
 | Version | Change |
 |---|---|
+| 1.4.1 (2026-11-28) | Every pop costs a flat amount of RAM, default 20 (Mod Settings > Head Popper > Cost, 0 to 100, 0 = free). Not enough RAM: no pop and a message. |
+| 1.4 (2026-11-28) | The key must be held 3 seconds (`HOLD_SECONDS` in init.lua); letting go earlier cancels, one pop per hold. The target is the NPC under the crosshair when the 3 seconds are up. CET input instead of a hotkey, same binding id. |
 | 1.3 (2026-10-24) | Only the NPC under or closest to the crosshair; protected NPCs skipped with a message; no console output unless `DEBUG` is on |
 | 1.2 | Hotkey is a CET binding ("Pop Head") instead of a fixed key |
 | 1.1 | Crosshair target first; range lowered from 100 m to 15 m |

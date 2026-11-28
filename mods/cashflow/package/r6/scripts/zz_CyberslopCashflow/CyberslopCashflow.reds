@@ -1,4 +1,7 @@
-// Cyberslop Cashflow 1.0.3 (2026-11-07; 1.0.3: nothing booked in the main menu pre-game session; 1.0.2: reward tags only for rewards that carry money, bounty tag from the paid event; 1.0.1: buffered file writes; one-shot source tags, oldest
+// Cyberslop Cashflow 1.1.1 (2026-11-26; 1.1.1: a change handled after the player detached is booked at
+// once, a pre-game attach drops the old listener, the open menu is filled in before it is marked open. 1.1.0: thread-safe booking. Money changes and source tags arrive as requests and
+// only the book's own handlers touch its lists; the item-removed events of bodies / containers run on parallel job
+// threads and pushing from there could corrupt a list (CTD exe+0x270242 class). 1.0.3: nothing booked in the main menu pre-game session; 1.0.2: reward tags only for rewards that carry money, bounty tag from the paid event; 1.0.1: buffered file writes; one-shot source tags, oldest
 // first, before the open menu; loot tags ignored in trade screens; NCF callbacks kept)
 // Where V's eddies come from and where they go, in real numbers.
 //   1. A vanilla inventory listener on V reports every change of eddies (signed amount, new
@@ -215,6 +218,26 @@ public class CashflowFile extends ScriptableService {
   }
 }
 
+// ---------------------------------------------------------------- requests (1.1.0)
+
+// Every caller (inventory listener, entity events, other mods) only queues these; the book handles them on its
+// own thread. Times are taken when the money moves or the tag is set, so the order of handling does not matter.
+public class CashflowTagRequest extends ScriptableSystemRequest {
+  public let cat: Int32;
+  public let detail: String;
+  public let from: Float;
+  public let to: Float;
+}
+
+public class CashflowMoneyRequest extends ScriptableSystemRequest {
+  public let time: Float;
+  public let diff: Int32;
+  public let total: Int32;
+  public let menu: Int32;
+  public let menuDetail: String;
+  public let scene: Bool;
+}
+
 // ---------------------------------------------------------------- listener and timer
 
 public class CashflowInventoryCallback extends InventoryScriptCallback {
@@ -285,21 +308,34 @@ public class CashflowBook extends ScriptableSystem {
   public static func TagWindow(gi: GameInstance, cat: Int32, detail: String, before: Float, after: Float) -> Void {
     let b: ref<CashflowBook> = CashflowBook.Get(gi);
     let now: Float;
+    let req: ref<CashflowTagRequest>;
     if !IsDefined(b) {
       return;
     };
     now = b.RealNow();
-    ArrayPush(b.m_tCat, cat);
-    ArrayPush(b.m_tDetail, detail);
-    ArrayPush(b.m_tFrom, now - before);
-    ArrayPush(b.m_tTo, now + after);
-    ArrayPush(b.m_tUsed, false);
-    while ArraySize(b.m_tCat) > 16 {
-      ArrayErase(b.m_tCat, 0);
-      ArrayErase(b.m_tDetail, 0);
-      ArrayErase(b.m_tFrom, 0);
-      ArrayErase(b.m_tTo, 0);
-      ArrayErase(b.m_tUsed, 0);
+    req = new CashflowTagRequest();
+    req.cat = cat >= 0 && cat < CashflowCat.Count() ? cat : CashflowCat.Other();
+    req.detail = detail;
+    req.from = now - before;
+    req.to = now + after;
+    b.QueueRequest(req);
+  }
+
+  private final func OnCashflowTagRequest(request: ref<CashflowTagRequest>) -> Void {
+    if !IsDefined(request) {
+      return;
+    };
+    ArrayPush(this.m_tCat, request.cat);
+    ArrayPush(this.m_tDetail, request.detail);
+    ArrayPush(this.m_tFrom, request.from);
+    ArrayPush(this.m_tTo, request.to);
+    ArrayPush(this.m_tUsed, false);
+    while ArraySize(this.m_tCat) > 16 {
+      ArrayErase(this.m_tCat, 0);
+      ArrayErase(this.m_tDetail, 0);
+      ArrayErase(this.m_tFrom, 0);
+      ArrayErase(this.m_tTo, 0);
+      ArrayErase(this.m_tUsed, 0);
     };
   }
 
@@ -311,10 +347,13 @@ public class CashflowBook extends ScriptableSystem {
   public static func OpenMenu(gi: GameInstance, cat: Int32, detail: String) -> Void {
     let b: ref<CashflowBook> = CashflowBook.Get(gi);
     if IsDefined(b) {
-      b.m_menuOpen = true;
+      // 1.1.1: the money callback runs on job threads and reads cat / detail once m_menuOpen
+      // is true, so close first, fill in, then open (a vendor opened inside the 2 s grace of the last one)
+      b.m_menuOpen = false;
       b.m_menuCat = cat;
       b.m_menuDetail = detail;
       b.m_menuGraceUntil = 0.0;
+      b.m_menuOpen = true;
     };
   }
 
@@ -348,6 +387,13 @@ public class CashflowBook extends ScriptableSystem {
     ArrayClear(this.m_tTo);
     ArrayClear(this.m_tUsed);
     this.EnsureArrays();
+    // 1.1.1: unregister an old listener before either branch; the pre-game return used to null
+    // m_player with the listener still registered, so the next real attach could no longer unregister it
+    if IsDefined(this.m_player) && IsDefined(this.m_listener) {
+      GameInstance.GetTransactionSystem(this.GetGameInstance()).UnregisterInventoryListener(this.m_player, this.m_listener);
+    };
+    this.m_listener = null;
+    this.m_callback = null;
     // 1.0.3: the main menu's pre-game session attaches a throwaway player; booking it wrote a fake
     // "+<balance> other" row (day 0, 12:00) on every launch
     if GameInstance.GetSystemRequestsHandler().IsPreGame() {
@@ -356,6 +402,8 @@ public class CashflowBook extends ScriptableSystem {
       return;
     };
     if IsDefined(player) {
+      // 1.1.0: a second attach without a detach in between must not leave the old listener booking twice
+      // (1.1.1: now done above the pre-game check)
       this.m_player = player;
       this.m_callback = new CashflowInventoryCallback();
       this.m_callback.book = this;
@@ -459,26 +507,49 @@ public class CashflowBook extends ScriptableSystem {
 
   // --- booking
 
+  // Inventory listener: runs on whichever thread moved the money, so it only reads and queues.
   public final func OnMoney(diff: Int32, total: Int32) -> Void {
     let s: ref<CashflowSettings> = this.Settings();
-    let now: Float;
+    let req: ref<CashflowMoneyRequest>;
     if !IsDefined(s) || !s.enabled {
       return;
     };
-    now = this.RealNow();
-    ArrayPush(this.m_pTime, now);
-    ArrayPush(this.m_pDiff, diff);
-    ArrayPush(this.m_pTotal, total);
-    if this.m_menuOpen && (this.m_menuGraceUntil <= 0.0 || now <= this.m_menuGraceUntil) {
-      ArrayPush(this.m_pMenu, this.m_menuCat);
-      ArrayPush(this.m_pMenuDetail, this.m_menuDetail);
-    } else {
-      ArrayPush(this.m_pMenu, -1);
-      ArrayPush(this.m_pMenuDetail, "");
+    req = new CashflowMoneyRequest();
+    req.time = this.RealNow();
+    req.diff = diff;
+    req.total = total;
+    req.menu = -1;
+    if this.m_menuOpen && (this.m_menuGraceUntil <= 0.0 || req.time <= this.m_menuGraceUntil) {
+      req.menu = this.m_menuCat;
+      req.menuDetail = this.m_menuDetail;
     };
-    ArrayPush(this.m_pScene, this.InScene());
+    // read now, as 1.0.3 did: a cutscene that hands the wallet back may end within the frame
+    req.scene = this.InScene();
+    this.QueueRequest(req);
+  }
+
+  private final func OnCashflowMoneyRequest(request: ref<CashflowMoneyRequest>) -> Void {
+    let f: ref<CashflowFile>;
+    if !IsDefined(request) {
+      return;
+    };
+    ArrayPush(this.m_pTime, request.time);
+    ArrayPush(this.m_pDiff, request.diff);
+    ArrayPush(this.m_pTotal, request.total);
+    ArrayPush(this.m_pMenu, request.menu);
+    ArrayPush(this.m_pMenuDetail, request.menuDetail);
+    ArrayPush(this.m_pScene, request.scene);
     if ArraySize(this.m_pTime) > 256 {
       this.Flush(true);
+    };
+    // 1.1.1: queued before OnPlayerDetach unregistered the listener but handled after it, so
+    // no tick will flush it (the next attach clears the list): book and write it now
+    if !IsDefined(this.m_listener) {
+      this.Flush(true);
+      f = CashflowFile.Get();
+      if IsDefined(f) {
+        f.Flush();
+      };
     };
   }
 
@@ -544,6 +615,9 @@ public class CashflowBook extends ScriptableSystem {
       };
     };
     this.Csv(delta, bal, CashflowCat.Key(cat), detail);
+    if !IsDefined(s) {
+      return;
+    };
     if s.debugLog {
       FTLog("[Cashflow] " + (delta > 0 ? "+" : "") + IntToString(delta) + " " + CashflowCat.Key(cat) + (StrLen(detail) > 0 ? " (" + detail + ")" : "") + " | balance " + IntToString(bal));
     };
@@ -579,6 +653,9 @@ public class CashflowBook extends ScriptableSystem {
     let day: Int32 = Cast<Int32>(ts / 86400.0);
     let hour: Int32 = Cast<Int32>((ts - Cast<Float>(day) * 86400.0) / 3600.0);
     let i: Int32 = 0;
+    if !IsDefined(s) {
+      return;
+    };
     this.EnsureArrays();
     while i < CashflowCat.Count() {
       this.periodIn[i] = 0;
@@ -592,9 +669,13 @@ public class CashflowBook extends ScriptableSystem {
 
   private final func CheckStatement() -> Void {
     let s: ref<CashflowSettings> = this.Settings();
-    let closeAt: Float = Cast<Float>(this.periodDay + 1) * 86400.0 + Cast<Float>(s.statementHour) * 3600.0;
+    let closeAt: Float;
     let bal: Int32;
     let text: String;
+    if !IsDefined(s) {
+      return;
+    };
+    closeAt = Cast<Float>(this.periodDay + 1) * 86400.0 + Cast<Float>(s.statementHour) * 3600.0;
     if this.GameNow() < closeAt {
       return;
     };
@@ -803,7 +884,7 @@ public abstract class CashflowLoot {
 @wrapMethod(ScriptedPuppet)
 protected cb func OnItemRemovedEvent(evt: ref<ItemBeingRemovedEvent>) -> Bool {
   let r: Bool = wrappedMethod(evt);
-  if !this.IsPlayer() {
+  if IsDefined(evt) && evt.itemID == MarketSystem.Money() && !this.IsPlayer() {
     CashflowLoot.Removed(evt, "body");
   };
   return r;

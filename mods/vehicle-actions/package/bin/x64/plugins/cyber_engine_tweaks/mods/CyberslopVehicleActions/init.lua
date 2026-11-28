@@ -1,4 +1,14 @@
--- Cyberslop Vehicle Actions 1.6.1 (2026-11-23; 1.6.0 2026-11-21, penicius-code); built on 1.1.0 (1.2.0 was reverted)
+-- Cyberslop Vehicle Actions 1.8.0 (2026-11-26; 1.7.1 same day); built on 1.1.0 (1.2.0 was reverted)
+-- 1.8.0: "Dismiss vehicle" button at the bottom (V's own vehicles only, not while V sits in it; second click within
+--        3 s confirms): the car pulls away driverless into traffic and goes back to the garage after 6 s, via
+--        bridge 1.1.0 VehicleObject.CSVA_Dismiss. Without the bridge it despawns at once (DespawnPlayerVehicle).
+-- 1.7.1: "Hands off automatically after 5 s standing" checkbox (on by default, saved in settings.json) + CET hotkey
+--        "Toggle auto hands off" (unbound): V lets go of the wheel after the car V drives has stood still for 5 s and
+--        takes it again when the car rolls. If V puts the hands back by key, they stay there until the car has moved.
+--        Needs Cyberslop Autodrive Manual Window 1.3.1 (PlayerPuppet.CSAMW_HandsFreeAuto).
+-- 1.7.0: "Hands off the wheel" button (Engine section, only while V drives a car) + CET hotkey "Hands off the wheel"
+--        (unbound): V takes the hands off the wheel like in autodrive (elbow out of an open window, else hands on the
+--        lap) without autodrive. Needs Cyberslop Autodrive Manual Window 1.3.0 (PlayerPuppet.CSAMW_HandsFreeToggle).
 -- 1.6.1: "hacked earlier; autodrive watched" reads Hacked Car Fix 1.1.1's getter CSHCF_TakenOver() (the field read was
 --        always nil on CET 1.38.1); the "Toggle auto engine start" hotkey no longer starts the car V already sits in
 --        (same as the checkbox: the current car counts as handled).
@@ -53,6 +63,12 @@ local DOME_COOLDOWN = 3.0        -- seconds between two forced re-applies
 local AUTOSTART_POLL = 0.25      -- seconds between "start engine when I get in" checks
 local AUTOSTART_SETTLE = 0.6     -- seconds in the driver seat before the start (EVS's own mount code runs first)
 local AUTOOFF_POLL = 0.25        -- seconds between "which car is V driving" checks for "off when I get out"
+local HANDS_POLL = 0.5           -- seconds between "is the car standing" checks for the automatic hands off
+local HANDS_IDLE = 5.0           -- seconds standing before V lets go of the wheel
+local HANDS_STILL = 0.3          -- m/s: below this the car counts as standing
+local HANDS_MOVED = 1.5          -- m/s: above this the car has moved (hands are back, the timer may run again)
+local DISMISS_DRIVE = 6.0        -- seconds the dismissed car drives off before it despawns
+local DISMISS_CONFIRM = 3.0      -- seconds the "click again" state of the Dismiss button lasts
 
 local SEATS = {
     { cname = "seat_front_left",  enum = 0, name = "Front left" },
@@ -78,6 +94,8 @@ local state = {
     autoStart = false,
     auto = { next = 0, vehHash = nil, seatedAt = nil, done = false },
     autoOff = false,
+    autoHands = true,
+    hands = { next = 0, still = 0, blocked = false, last = 0 },   -- blocked: V put the hands back by key
     off = { next = 0, driverHash = nil },   -- car V sits in and has driven since getting in
     targetId = nil,      -- EntityID of the current target
     pinned = false,
@@ -86,6 +104,7 @@ local state = {
     messageTime = 0,
     clock = 0,
     dome = { next = 0, vehHash = nil, running = false, forceAt = nil, lastForce = -100 },
+    dismiss = { hash = nil, at = -100 },   -- car whose Dismiss button waits for the confirming click
 }
 
 ------------------------------------------------------------------ settings
@@ -99,6 +118,7 @@ local function loadSettings()
         if type(data.keepDomeClear) == "boolean" then state.keepDomeClear = data.keepDomeClear end
         if type(data.autoStart) == "boolean" then state.autoStart = data.autoStart end
         if type(data.autoOff) == "boolean" then state.autoOff = data.autoOff end
+        if type(data.autoHands) == "boolean" then state.autoHands = data.autoHands end
     end
 end
 
@@ -106,7 +126,7 @@ local function saveSettings()
     local f = io.open(SETTINGS_FILE, "w")
     if not f then return end
     f:write(json.encode({ show = state.show, keepDomeClear = state.keepDomeClear, autoStart = state.autoStart,
-                          autoOff = state.autoOff }))
+                          autoOff = state.autoOff, autoHands = state.autoHands }))
     f:close()
 end
 
@@ -1056,6 +1076,115 @@ local function drawExtras(veh, vc, ps)
     end
 end
 
+------------------------------------------------------------------ dismiss (1.8.0)
+local function dismissVehicle(veh)
+    local name = vehicleName(veh)
+    local res = try(function() return veh:CSVA_Dismiss(DISMISS_DRIVE) end)
+    if res == nil then   -- bridge 1.1.0 not compiled in yet: despawn at once
+        local ok = pcall(function()
+            local id = NewObject("vehicleGarageVehicleID")
+            id.recordID = veh:GetRecordID()
+            Game.GetVehicleSystem():DespawnPlayerVehicle(id)
+        end)
+        res = ok and 0 or -1
+    end
+    if res == 0 then
+        state.targetId, state.pinned = nil, false
+        say(name .. " dismissed")
+    elseif res == 1 then
+        say("Dismiss: not your vehicle")
+    elseif res == 2 then
+        say("Dismiss: get out first")
+    else
+        say("Dismiss failed")
+    end
+end
+
+local function drawDismiss(veh, inside)
+    ImGui.Separator()
+    if try(function() return veh:IsPlayerVehicle() end) ~= true then
+        ImGui.TextDisabled("Dismiss: only your own vehicles")
+        return
+    end
+    if inside then
+        ImGui.TextDisabled("Dismiss: get out first")
+        return
+    end
+    local hash = try(function() return veh:GetEntityID().hash end)
+    local armed = hash ~= nil and state.dismiss.hash == hash and state.clock - state.dismiss.at < DISMISS_CONFIRM
+    if ImGui.Button((armed and "Click again to dismiss" or "Dismiss vehicle") .. "##dismiss", FULL_W, BTN_H) then
+        if armed then
+            state.dismiss.hash = nil
+            dismissVehicle(veh)
+        else
+            state.dismiss.hash, state.dismiss.at = hash, state.clock
+        end
+    end
+end
+
+------------------------------------------------------------------ hands off the wheel (1.7.0)
+-- Cyberslop Autodrive Manual Window 1.3.0 does the work; state: 0 hands on the wheel, 1 off by key, 2 autodrive
+local HANDS_MSG = {
+    [1] = "Hands off the wheel", [0] = "Hands back on the wheel",
+    [-1] = "Hands off: only while driving a car", [-2] = "Hands off: autodrive already does it",
+    [-3] = "Hands off: stop the car first",
+}
+
+local function handsState(player)
+    return try(function() return player:CSAMW_HandsFreeState() end)
+end
+
+local function toggleHands(player)
+    local res = try(function() return player:CSAMW_HandsFreeToggle() end)
+    if res == nil then say("Hands off: needs Cyberslop Autodrive Manual Window 1.3.0") return end
+    say(HANDS_MSG[res] or ("Hands off: " .. tostring(res)))
+end
+
+local function drawHands(player, veh, inside)
+    if not inside or isBike(veh) then return end
+    if try(function() return veh:IsPlayerDriver() end) ~= true then return end
+    local st = handsState(player)
+    if st == nil then return end
+    ImGui.Separator()
+    local text = (st == 2) and "Hands off the wheel: autodrive" or ("Hands off the wheel: " .. onOff(st == 1))
+    if ImGui.Button(text .. "##handsoff", FULL_W, BTN_H) then
+        toggleHands(player)
+    end
+    local v, changed = ImGui.Checkbox("Hands off automatically after 5 s standing##autohands", state.autoHands)
+    if changed then
+        state.autoHands = v
+        state.hands.still, state.hands.blocked = 0, false
+        saveSettings()
+    end
+end
+
+-- 1.7.1: the car V drives stands for HANDS_IDLE seconds -> hands off (the reds puts them back when it rolls)
+local function handsAutoTick()
+    local h = state.hands
+    if state.clock < h.next then return end
+    h.next = state.clock + HANDS_POLL
+    if not state.autoHands then h.still = 0; return end
+
+    local player = Game.GetPlayer()
+    local veh = player and try(function() return player:GetMountedVehicle() end) or nil
+    if not isVehicle(veh) or isBike(veh) or try(function() return veh:IsPlayerDriver() end) ~= true then
+        h.still, h.blocked, h.last = 0, false, 0
+        return
+    end
+    local st = handsState(player)
+    if st == nil then return end                              -- Autodrive Manual Window 1.3.0+ not there
+    local speed = math.abs(try(function() return veh:GetCurrentSpeed() end) or 99)
+    if h.last == 1 and st == 0 and speed < HANDS_STILL then h.blocked = true end   -- back on the wheel by key
+    h.last = st
+    if speed > HANDS_MOVED then h.blocked = false end
+    if speed >= HANDS_STILL or st ~= 0 or h.blocked then h.still = 0; return end
+    h.still = h.still + HANDS_POLL
+    if h.still < HANDS_IDLE then return end
+    local res = try(function() return player:CSAMW_HandsFreeAuto() end)
+    h.still = (res == 1) and 0 or (HANDS_IDLE - 1.0)          -- refused (getting in, weapon out): try again in 1 s
+    if res == 1 then h.last = 1 end
+end
+
 ------------------------------------------------------------------ EVS check (1.5.1 diagnostic)
 -- writes evscheck.log in this folder: what CET can read / call of EVS on the target car, with the error text
 local EVS_CHECK_FILE = "evscheck.log"
@@ -1163,12 +1292,14 @@ local function drawWindow()
 
     drawHack(player, veh, ps)
     drawEngine(veh, vc, inside)
+    drawHands(player, veh, inside)
     drawLights(veh, vc)
     drawDome(veh, vc, inside)
     if not isBike(veh) then
         drawDoorsWindows(veh, vc, ps)
     end
     drawExtras(veh, vc, ps)
+    drawDismiss(veh, inside)
 
     ImGui.Separator()
     if ImGui.Button("EVS check (writes evscheck.log)##evscheck", FULL_W, BTN_H) then
@@ -1227,6 +1358,19 @@ registerHotkey("toggle_autooff", "Toggle auto engine off", function()
     say(state.autoOff and "Engine and power go off when you get out" or "Auto engine off disabled")
 end)
 
+registerHotkey("toggle_hands_off", "Hands off the wheel", function()
+    local player = Game.GetPlayer()
+    if player == nil then return end
+    pcall(toggleHands, player)
+end)
+
+registerHotkey("toggle_auto_hands_off", "Toggle auto hands off", function()
+    state.autoHands = not state.autoHands
+    state.hands.still, state.hands.blocked = 0, false
+    saveSettings()
+    say(state.autoHands and "Hands go off the wheel after 5 s standing" or "Automatic hands off disabled")
+end)
+
 registerForEvent("onOverlayOpen", function() state.overlay = true end)
 registerForEvent("onOverlayClose", function() state.overlay = false end)
 
@@ -1235,6 +1379,7 @@ registerForEvent("onUpdate", function(dt)
     pcall(domeTick)
     pcall(autoStartTick)
     pcall(autoOffTick)
+    pcall(handsAutoTick)
     pcall(pollHcfLog)
     if not pcall(engTraceTick) then state.engTrace = nil end
 end)

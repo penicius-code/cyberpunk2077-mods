@@ -1,4 +1,4 @@
-// Cyberslop Vehicle Actions field bridge 1.0.0 (2026-11-21, penicius-code), for the CET window 1.6.0+
+// Cyberslop Vehicle Actions field bridge 1.1.0 (2026-11-26; 1.0.0 2026-11-21), for the CET window 1.6.0+
 // CET 1.38.1 on patch 2.5 reads every script field as nil (vanilla and mod-added alike; methods work, proven
 // with evscheck.log 2026-11-21). This gives the CET window methods to read and write the few fields it
 // needs, and runs Enhanced Vehicle System's multi-tap actions (their events carry a tapCount field).
@@ -78,6 +78,48 @@ public func CSVA_Character() -> wref<GameObject> {
 @addMethod(VehicleStartedMountingEvent)
 public func CSVA_Slot() -> CName {
   return this.slotID;
+}
+
+// 1.1.0: dismiss one of V's own vehicles. It pulls away driverless into traffic (same calls as a summoned car
+// leaving, as in Vehicle Summon Tweaks - Dismiss) and goes back to the garage after `delay` seconds.
+// 0 = done, 1 = not V's vehicle, 2 = V sits in it.
+public class CSVADismissCallback extends DelayCallback {
+  public let vehicleSystem: wref<VehicleSystem>;
+  public let vehicleId: GarageVehicleID;
+
+  public func Call() -> Void {
+    if IsDefined(this.vehicleSystem) {
+      this.vehicleSystem.DespawnPlayerVehicle(this.vehicleId);
+    }
+  }
+}
+
+@addMethod(VehicleObject)
+public func CSVA_Dismiss(delay: Float) -> Int32 {
+  let game: GameInstance = this.GetGame();
+  if !this.IsPlayerVehicle() {
+    return 1;
+  }
+  let mounted: wref<VehicleObject>;
+  if VehicleComponent.GetVehicle(game, GetPlayer(game), mounted) && IsDefined(mounted)
+      && Equals(mounted.GetEntityID(), this.GetEntityID()) {
+    return 2;
+  }
+  let ready: ref<AIEvent> = new AIEvent();
+  ready.name = n"DriverReady";
+  this.QueueEvent(ready);
+  let drive: ref<AIVehicleJoinTrafficCommand> = new AIVehicleJoinTrafficCommand();
+  drive.needDriver = false;
+  drive.useKinematic = true;
+  let ai: ref<AIVehicleAgent> = this.GetAIComponent();
+  if IsDefined(ai) {
+    ai.SendCommand(drive);
+  }
+  let cb: ref<CSVADismissCallback> = new CSVADismissCallback();
+  cb.vehicleSystem = GameInstance.GetVehicleSystem(game);
+  cb.vehicleId.recordID = this.GetRecordID();
+  GameInstance.GetDelaySystem(game).DelayCallback(cb, MaxF(delay, 0.0));
+  return 0;
 }
 
 // ---------------------------------------------------------------- EVS

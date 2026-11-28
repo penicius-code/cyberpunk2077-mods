@@ -1,9 +1,13 @@
--- ForceStun 1.1 by penicius-code
+-- ForceStun 1.2.4
 -- Apply ActualStun to crosshair target via hotkey
 -- Works with Gorilla Arms equipped - no weapon swap needed.
 -- Pipeline: ForceStun → ActualStun on NPC → Grapple prompt appears → SavageSlingAlways → Throw
 -- ActualStun comes from Buttslinger Quickmelee (Nexus 10556). Without it ForceStun
 -- applies the vanilla stun instead (no grapple prompt).
+-- 1.2: the shock add-on (r6\scripts\ForceStun\ForceStunShock.reds + r6\tweaks\ForceStun\ForceStunShock.yaml)
+-- applies the stun with the Mod Settings duration, silent shock damage (a would-be kill becomes an Unconscious
+-- knockout) and the electrified look; 1.2.1: RAM cost. Settings: Mod Settings > ForceStun. Without the add-on this file falls back
+-- to the 1.1 behaviour.
 -- Place in: bin/x64/plugins/cyber_engine_tweaks/mods/ForceStun/init.lua
 
 local settings = {
@@ -12,6 +16,7 @@ local settings = {
 }
 
 local warnedNoButtslinger = false
+local warnedNoShock = false
 
 local function Distance(a, b)
     local pa = a:GetWorldPosition()
@@ -81,25 +86,24 @@ local function HasRecord(path)
     return ok and record ~= nil
 end
 
-registerForEvent('onInit', function()
-    print("[ForceStun] Loaded! Use hotkey to stun targeted NPC.")
-end)
+-- The redscript shock system, or nil when the add-on is not installed.
+local function GetShockSystem()
+    local ok, sys = pcall(function()
+        return Game.GetScriptableSystemsContainer():Get('ForceStunShockSystem')
+    end)
+    if ok and sys then return sys end
+    return nil
+end
 
-registerHotkey("ForceStunTarget", "Force Stun Target (for Savage Sling)", function()
-    local player = Game.GetPlayer()
-    if not player then return end
+local shockMessages = {
+    stun = "[ForceStun] Target stunned and shocked! Grab them (F) for Savage Sling.",
+    vanilla = "[ForceStun] Target stunned (vanilla stun) and shocked.",
+    ko = "[ForceStun] The shock knocked the target out.",
+    immune = "[ForceStun] Target is stun-immune right now (just stunned): nothing done, no RAM used.",
+}
 
-    -- Get the NPC in crosshair
-    local target, downUnderCrosshair = GetCrosshairNPC(player)
-    if not target then
-        if downUnderCrosshair then
-            print("[ForceStun] The NPC under the crosshair is down or inactive, can't be stunned")
-        else
-            print("[ForceStun] No NPC in crosshair")
-        end
-        return
-    end
-
+-- 1.1 behaviour, used when the shock add-on is missing
+local function PlainStun(target)
     local ses = Game.GetStatusEffectSystem()
     local targetID = target:GetEntityID()
 
@@ -120,4 +124,51 @@ registerHotkey("ForceStunTarget", "Force Stun Target (for Savage Sling)", functi
         end
         print("[ForceStun] Target stunned (vanilla stun).")
     end
+end
+
+registerForEvent('onInit', function()
+    print("[ForceStun] Loaded! Use hotkey to stun targeted NPC.")
+end)
+
+-- 1.2.4: registerInput instead of registerHotkey: a CET hotkey only fires when no other key is held, so it never
+-- fired while walking (W) or zoomed (right mouse). Same id, so the existing binding (F3) stays. Fires on key down.
+registerInput("ForceStunTarget", "Force Stun Target (for Savage Sling)", function(isDown)
+    if not isDown then return end
+    local player = Game.GetPlayer()
+    if not player then return end
+
+    -- Get the NPC in crosshair
+    local target, downUnderCrosshair = GetCrosshairNPC(player)
+    if not target then
+        if downUnderCrosshair then
+            print("[ForceStun] The NPC under the crosshair is down or inactive, can't be stunned")
+        else
+            print("[ForceStun] No NPC in crosshair")
+        end
+        return
+    end
+
+    local sys = GetShockSystem()
+    if sys then
+        local ok, res = pcall(function() return sys:Shock(target) end)
+        if ok and shockMessages[res] then
+            print(shockMessages[res])
+            return
+        end
+        local cost, have = nil, nil
+        if ok and type(res) == "string" then cost, have = res:match("^noram:(%d+):(%d+)$") end
+        if cost then
+            print("[ForceStun] Not enough RAM (" .. have .. " / " .. cost .. ")")
+            return
+        end
+        if ok and res == "none" then
+            print("[ForceStun] The target can't be stunned")
+            return
+        end
+        print("[ForceStun] Shock add-on call failed (" .. tostring(res) .. "), using the plain stun")
+    elseif not warnedNoShock then
+        warnedNoShock = true
+        print("[ForceStun] Shock add-on (r6\\scripts\\ForceStun) not loaded, using the plain stun")
+    end
+    PlainStun(target)
 end)

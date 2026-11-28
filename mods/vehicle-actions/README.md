@@ -1,7 +1,7 @@
 # Vehicle Actions
 
 A Cyber Engine Tweaks window with buttons for the car you sit in or aim at: locks, engine, power, lights, doors, windows, trunk, hood, and every Enhanced Vehicle System key action. Single-player only.
-Version 1.6.1 | Built for game version 2.5 (1.0.0 on 2.31) | Status: 1.0.0 confirmed working in game (2026-11-05, 2.31); 1.1.0 to 1.6.1 not yet play-tested
+Version 1.8.0 | Built for game version 2.5 (1.0.0 on 2.31) | Status: 1.0.0 confirmed working in game (2026-11-05, 2.31); 1.1.0 to 1.8.0 not yet play-tested
 
 ## What and why
 
@@ -14,6 +14,7 @@ Sections:
 - **Crystal dome** (cars that have one): on or off, "Clear glass now", and "Keep glass clear (engine start, in car)".
 - **Doors and windows** per seat, trunk, hood, spoiler, crystal coat, and police lights, siren and signal on police cars.
 - **Take Control repair:** a status row and a repair button (trunk, autodrive) for a car the game's Take Control quickhack left broken. With [Take Control Car Fix](../take-control-car-fix/README.md) installed it calls that mod's repair; otherwise it does the same steps itself.
+- **Dismiss vehicle** (1.8.0): your own car, while you are not in it, drives off into traffic without a driver and goes back to the garage.
 - **EVS check:** a diagnostic button that writes what CET can read of EVS on the target car to `evscheck.log`.
 
 On patch 2.5, CET 1.38.1 reads every script field as nil. Since 1.6.0 all field reads and writes go through a small redscript bridge (`CSVABridge.reds`); its EVS part only compiles when EVS is installed.
@@ -65,6 +66,9 @@ Window checkboxes "Start engine when I get in", "Engine and power off when I get
 
 | Version | Change |
 |---|---|
+| 1.8.0 | "Dismiss vehicle": for your own vehicle while you are not in it, two clicks within 3 s send it driving off into traffic without a driver, and it goes back to the garage after 6 s. Bridge 1.1.0 adds the call; without the bridge the car is only despawned. |
+| 1.7.1 | Checkbox "Hands off automatically after 5 s standing" and a hotkey for it (needs Autodrive Manual Window, not published). |
+| 1.7.0 | Button and hotkey "Hands off the wheel" while you drive; hidden unless Autodrive Manual Window 1.3.0 (not published) is installed. |
 | 1.6.1 (2026-11-23) | The Take Control status row reads Take Control Car Fix's getter; "Toggle auto engine start" no longer starts the car V already sits in |
 | 1.6.0 (2026-11-21) | Redscript bridge for all field reads and writes (CET 1.38.1 on 2.5 reads fields as nil); lights section always shown, as checkboxes; engine buttons log an 8 s timeline |
 | 1.5.1 | "EVS check" diagnostic button |
